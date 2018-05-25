@@ -1,5 +1,5 @@
 module ADatasets
 
-# package code goes here
+include("makesets.jl")
 
 end # module
