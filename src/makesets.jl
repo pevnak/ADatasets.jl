@@ -2,6 +2,13 @@ using Distances
 using CSV 
 using StatsBase
 
+
+"""
+    standartize(x...)
+    
+    returned standartized matrices with mean and standard deviation calculated jointly across all datasets
+
+"""
 function standartize(x...)
     xx = hcat(x...)
     mn = mean(xx,2);
@@ -10,8 +17,27 @@ function standartize(x...)
     map(z -> (z .- mn)./sd,x)
 end
 
+"""
+    catwithlabels(x...)
 
-loaddataset(name,difficulty,idir,T=Float32) = (Matrix{T}(CSV.read(joinpath(idir,name,"normal.txt"),header=false,delim=" "))',Matrix{T}(CSV.read(joinpath(idir,name,difficulty*".txt"),header=false,delim=" "))')
+    horizontally concatenate matrices `x` while return label vector, starting with first matrix with one
+
+"""
+catwithlabels(x...) = hcat(x...), mapreduce(i -> i[1]*ones(Int,i[2]),vcat,enumerate(size.(x,2)))
+
+"""
+    typedread(filename,T,transposed = true)
+
+    load CSV file such that all columns are initiated to type T
+"""
+function typedread(filename,T,transposed = true)
+    n = length(CSV.read(filename, header = false, delim=" ",rows=1));
+    m = Matrix{T}(CSV.read(filename,header = false, delim = " ", types = fill(T,n)))
+    (transposed) ? transpose(m) : m
+end
+
+
+loaddataset(name,difficulty,idir,T=Float32) = (typedread(joinpath(idir,name,"normal.txt"),T),typedread(joinpath(idir,name,difficulty*".txt"),T))
 
 
 """
@@ -23,25 +49,23 @@ real data.", 2013 for details.
 
 alpha - the ratio of training to all data\n
 difficulty - easy/medium/hard/very_hard problem based on similarity of anomalous measurements to normal\n
-frequency - ratio of anomalous to normal data\n
 variation - low/high - should anomalies be clustered or not\n
 seed - random seed
 """
-function makeset(normal, anomalous, alpha, frequency, variation, seed=time_ns())
+function makeset(normal, anomalous, alpha, variation, seed=time_ns())
     # test correct parameters size
     !(0 <= alpha <= 1) && error("alpha must be in the interval [0,1]")
-    !(0 <= frequency <= 1) && error("frequency must be in the interval [0,1]")
 
     # problem dimensions
-    M, N = size(normal)
-    trN = Int(floor(N*alpha))
-    tstN = N - trN
+    n = size(normal,2)
+    trn_n = Int(round(n*alpha))
+    tst_n = n - trn_n
 
     # how many anomalous points to be sampled 
-    aM, aN = size(anomalous)
-    trK = minimum(Int.(round.([trN*frequency, aN*alpha])))
-    # tstK = minimum(Int.(round.([tstN*frequency, aN*(1-alpha)])))
-    tstK = minimum(Int.(round.([tstN*frequency, aN*(1-alpha)])))
+    a = size(anomalous,2)
+    trn_a = Int(round(a*alpha))
+    tst_a = a - trn_a
+
 
     # set seed
     srand(seed)
@@ -49,34 +73,40 @@ function makeset(normal, anomalous, alpha, frequency, variation, seed=time_ns())
     normal, anomalous = standartize(normal, anomalous)
 
     # randomly sample the training and testing normal data
-    inds = sample(1:N, N, replace = false)
-    trNdata = normal[:, inds[1:trN]]
-    tstNdata = normal[:, inds[trN+1:end]]
+    inds = randperm(n)[1:trn_n]
+    trn_n_data = normal[:, inds]
+    tst_n_data = normal[:, setdiff(1:n,inds)]
 
     # now sample the anomalous data
-    K = trK
-    if variation == "low"
-        # in this setting, simply sample trK and tstK anomalous points
-        # is this done differently in the original paper?
-        inds = sample(1:aN, K, replace = false)
+    if variation == "low" 
+        # in this setting, simply sample trn_a anomalous points
+        inds = randperm(a)[1:trn_a]
     elseif variation == "high"
-        # in this setting, randomly choose a point and then K-1 nearest points to it as a cluster
-        ind = sample(1:aN, 1)
-        x = anomalous[:, ind]
-        x = reshape(x, length(x), 1) # promote the vector to a 2D array
+        # in this setting, randomly choose a point and then trn_a-1 nearest points to it as a cluster
+        x = anomalous[:, sample(1:a)]
+        x = reshape(x, : , 1) # promote the vector to a 2D array
         # here maybe other metrics could be used?
         dists = pairwise(Euclidean(), x, anomalous) # get the distance vector
         inds = sortperm(reshape(dists, length(dists))) # get the sorted indices
-        inds = inds[1:K] # get the nearest ones
-        inds = inds[sample(1:K, K, replace=false)] # scramble them
+        inds = inds[1:trn_a] # get the nearest ones
+        inds = inds[randperm(length(inds))] # scramble them
     end
-    trAdata = anomalous[:, inds]
-    tstAdata = anomalous[:,setdiff(1:size(anomalous,2),inds)]
+    trn_a_data = anomalous[:, inds]
+    tst_a_data = anomalous[:,setdiff(1:a,inds)]
 
     # compute the clusterdness - sample variance of normal vs anomalous instances
-    varN = mean(pairwise(Euclidean(), trNdata[:, sample(1:size(trNdata,2), min(1000, N), replace=false)]))/2
-    varA = (K > 0) ? mean(pairwise(Euclidean(), trAdata[:, sample(1:K, min(1000, K), replace=false)]))/2 : 0.0
+    varN = mean(pairwise(Euclidean(), trn_n_data[:, sample(1:size(trn_n_data,2), min(1000, size(trn_n_data,2)), replace=false)]))/2
+    varA = (trn_n > 0) ? mean(pairwise(Euclidean(), trn_a_data[:, sample(1:size(trn_a_data,2), min(1000, size(trn_a_data,2)), replace=false)]))/2 : 0.0
 
     clusterdness =  (varA>0) ? varN/varA : clusterdness = Inf
-    (hcat(trNdata, trAdata),vcat(zeros(Int,trN), ones(Int,trK))), (hcat(tstNdata, tstAdata),vcat(zeros(Int,tstN), ones(Int,tstK))), clusterdness
+    catwithlabels(trn_n_data, trn_a_data), catwithlabels(tst_n_data, tst_a_data), clusterdness
+end
+
+subsampleanomalous(x,α::AbstractFloat) = subsampleanomalous(x,Int(Round(α*size(x,2))))
+function subsampleanomalous(x,n::Int)
+    data,labels = x 
+    a = find(labels .> 0)
+    inds = sample(a,min(n,length(a),replace=false))
+    inds = vcat(inds(find(labels .== 1)), inds)
+    data[:,inds], labels[inds]
 end
