@@ -102,11 +102,17 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
     catwithlabels(trn_n_data, trn_a_data), catwithlabels(tst_n_data, tst_a_data), clusterdness
 end
 
-subsampleanomalous(x,α::AbstractFloat) = subsampleanomalous(x,Int(Round(α*size(x,2))))
-function subsampleanomalous(x,n::Int)
+"""
+    subsampleanomalous(x,α)
+    subsampleanomalous(x,n)
+
+    removes all but α-fraction (or n) non-anomalous samples from dataset `x = (data,labels)`
+"""
+subsampleanomalous(x,α::AbstractFloat,seed = time_ns()) = subsampleanomalous(x,Int(round(α*sum(x[2] .== 1))),seed)
+function subsampleanomalous(x,n::Int,seed = time_ns())
     data,labels = x 
-    a = find(labels .> 0)
-    inds = sample(a,min(n,length(a),replace=false))
-    inds = vcat(inds(find(labels .== 1)), inds)
+    a = find(labels .> 1)
+    inds = sample(a,min(n,length(a)),replace=false)
+    inds = vcat(find(labels .== 1), inds)
     data[:,inds], labels[inds]
 end
