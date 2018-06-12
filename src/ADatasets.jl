@@ -3,11 +3,7 @@ using DataFrames
 surveydatasets = ["breast-cancer-wisconsin", "cardiotocography", "ecoli", "magic-telescope", "waveform-1", "statlog-segment", "wall-following-robot", "yeast", "sonar"]
 
 include("makesets.jl")
-
-evaluate(predict::Function, data) = EvalCurves.auc(EvalCurves.roccurve(predict(data[1]), data[2] - 1)...)
-evaluate(predict::Function, m, data) = EvalCurves.auc(EvalCurves.roccurve(predict(m, data[1]), data[2] - 1)...)
-evaluate(predict::AbstractArray, m, data) = map(p -> evaluate(p, m, data),predict)
-
+include("evaluation.jl")
 
 """
 		function append2file(fname::String,dname::String,d::DataFrame)

@@ -11,7 +11,7 @@ using FluxExtensions
 using Flux
 using MLDataPattern
 
-import ADatasets: makeset, loaddataset, evaluate, append2file, surveydatasets, subsampleanomalous
+import ADatasets: runtest
 import FluxExtensions: layerbuilder, freeze
 
 
@@ -36,28 +36,4 @@ predicts = [(m, x) -> SemiSupervised.px(m,x,100,m.β)[:], (m, x) -> SemiSupervis
 prnames = ["px","pxis","vita"]
 ps = [(3,2^zdim,2^hidden,β) for zdim in 1:4 for hidden in 1:zdim for β in [0.1,0.5,1.0,2.0]]
 
-function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation,repetition = 1, steps = 50000)
-  println(@sprintf("processing knn %s %s %g %s",dataset, anomaly_type, polution, variation))
-  train, test, clusterdness = makeset(loaddataset(dataset,anomaly_type,idir)..., 0.75,variation)
-  idim = size(train[1],1)
-  data = RandomBatches((train[1],),100,steps)
-
-  results = mapreduce(vcat,ps) do p
-    mf,info = fit(data,p...)
-    aucs = DataFrame(prediction = prnames, 
-    	test_aucs = evaluate(predicts,mf,test),
-    	train_aucs = evaluate(predicts,mf,train),
-    	train_005 = evaluate(predicts,mf,subsampleanomalous(train,0.005,repetition)),
-    	train_01 = evaluate(predicts,mf,subsampleanomalous(train,0.01,repetition)),
-    	)
-    join(info, aucs, kind = :cross)
-  end
-
-  ofname = joinpath(odir,dataset,@sprintf("vae_%s_%g_%s.jld",anomaly_type,polution,variation))
-  results[:repetition] = repetition
-  results[:clusterdness] = clusterdness
-  append2file(ofname,"auc",results)
-end
-
-
-map(d -> runtest(fit, ps, predicts, prnames, d,"easy",0.05,"low"),surveydatasets)
+map(d -> runtest(fit, ps, predicts, prnames, d,"easy",0.05,"low",idir, odir, i),surveydatasets)
