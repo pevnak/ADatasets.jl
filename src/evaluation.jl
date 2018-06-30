@@ -1,12 +1,13 @@
 using EvalCurves
-
+using MLDataPattern
+using FileIO
 """
     runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, repetition = 1, steps = 50000)
 
 
     fit ---
 """
-function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, repetition = 1, steps = 50000)
+function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, name, repetition = 1, steps = 50000)
   println(@sprintf("processing knn %s %s %g %s",dataset, anomaly_type, polution, variation))
   train, test, clusterdness = makeset(loaddataset(dataset,anomaly_type,idir)..., 0.75,variation)
   idim = size(train[1],1)
@@ -23,7 +24,7 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
     join(info, aucs, kind = :cross)
   end
 
-  ofname = joinpath(odir,dataset,@sprintf("vae_%s_%g_%s.jld",anomaly_type,polution,variation))
+  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jld",name,anomaly_type,polution,variation))
   results[:repetition] = repetition
   results[:clusterdness] = clusterdness
   append2file(ofname,"auc",results)
