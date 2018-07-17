@@ -34,7 +34,12 @@ function loadresults(f,idir,criterion = :test_aucs)
 end
 
 function showheatmap(df::DataFrame)
-	dff = filter(row -> row[:prediction] == "px",df)[[:zmmd,:recerror,:test_aucs]]
+	dff = filter(row -> row[:prediction] == "kde_pxis",df)[[:zmmd,:recerror,:test_aucs]]
+	scatter(dff[:zmmd],dff[:recerror],zcolor = dff[:test_aucs])
+end
+
+function showheatmap(df::DataFrame)
+	dff = filter(row -> row[:prediction] == "kde_pxis",df)[[:zmmd,:recerror,:test_aucs]]
 	scatter(dff[:zmmd],dff[:recerror],zcolor = dff[:test_aucs])
 end
 
@@ -52,9 +57,6 @@ function rankresults(df)
 	names!(dff, [:problem,algs...])
 	dff
 end
-
-
-
 
 dfipmae = loadresults("ipmae_easy_0.05_low.jld",idir)
 dfvae = loadresults("vae_easy_0.05_low.jld",idir)

@@ -22,8 +22,8 @@ odir = filter(isdir,["/Users/tpevny/Work/Julia/results/datasets","/mnt/output/re
 function fit(data,layers,hidden,zdim,β)
   idim = size(data.data[1],1)
   σ2 = SemiSupervised.bandwidthofkde(randn(zdim,1000),20)
-	m = SemiSupervised.IPMAE(FluxExtensions.layerbuilder(idim,hidden,2*zdim,3,"relu","linear","Dense"),
-		FluxExtensions.layerbuilder(zdim,hidden,idim,3,"relu","linear","Dense"),(x,y) -> IPMeasures.mmdg(x,y,0.5/σ2), β)
+	m = SemiSupervised.VAE(FluxExtensions.layerbuilder(idim,hidden,2*zdim,3,"relu","linear","Dense"),
+		FluxExtensions.layerbuilder(zdim,hidden,idim,3,"relu","linear","Dense"), β)
   m = Adapt.adapt(Float32,m);
   mf = freeze(m)
   opt = Flux.Optimise.ADAM(params(m));
