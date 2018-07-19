@@ -9,7 +9,7 @@ using IPMeasures
 using SemiSupervised
 using FluxExtensions
 using Flux
-using KNN
+using kNN
 using MLDataPattern
 import ADatasets: runtest
 import FluxExtensions: layerbuilder, freeze

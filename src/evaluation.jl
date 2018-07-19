@@ -1,6 +1,17 @@
 using EvalCurves
 using MLDataPattern
 using FileIO
+
+
+"""
+    detacc_at_fp(n, p, α = [0.005,0.01,0.05])
+
+    detection accuracy at particular false positive rates
+
+"""
+detacc_at_fp(n, p, α = [0.005,0.01,0.05]) = mean(p' .> quantile(n,1 - α),2)
+
+
 """
     runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, repetition = 1, steps = 50000)
 
