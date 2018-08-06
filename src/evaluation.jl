@@ -1,4 +1,3 @@
-using EvalCurves
 using MLDataPattern
 using FileIO
 
@@ -22,7 +21,7 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
   println(@sprintf("processing knn %s %s %g %s",dataset, anomaly_type, polution, variation))
   train, test, clusterdness = makeset(loaddataset(dataset,anomaly_type,idir)..., 0.75,variation)
   idim = size(train[1],1)
-  data = RandomBatches((train[1],),100,steps)
+  data = RandomBatches((subsampleanomalous(train,polution)[1],),100,steps)
 
   results = mapreduce(vcat,ps) do p
     m,info = fit(data,p...)
@@ -37,9 +36,7 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
       	auc_train005 = auc(f, m, subsampleanomalous(train,0.005,repetition)),
       	auc_train01 = auc(f, m, subsampleanomalous(train,0.01,repetition))
     	)
-      df = hcat(df,fprstats(f, m, train,test,0.005))
-      df = hcat(df,fprstats(f, m, train,test,0.01))
-      hcat(df,fprstats(f, m, train,test,0.05))
+      hcat(df,fprstats(f, m, train,test,[0.005,0.01,0.05]))
     end
     aucs = join(info, aucs, kind = :cross)
 
@@ -58,12 +55,17 @@ end
   and calculates on this threshold false positive rate and detection accuracy
 
 """
-function fprstats(f, m, train,test,α)
+function fprstats(f, m, train,test,α::T) where {T<:Real}
   τ = quantile(f(m,train[1]), 1 - α)
   o = f(m, test[1])
-  names = map(s -> Symbol(replace(@sprintf("%s_%g",s,α),".","")),["fpr","dacc"]) 
-  DataFrame([mean( o[test[2][:] .== 1] .- τ .> 0) detacc_at_fp(o,test[2],[α])[1]], names)
+  tstfp = mean( o[test[2][:] .== 1] .- τ .> 0)
+  dacc = mean(o[test[2][:] .== 2] .- τ .> 0)
+  npscore = max(0,tstfp - α)/α + mean(o[test[2][:] .== 2] .- τ .<= 0)
+  names = map(s -> Symbol(replace(@sprintf("%s_%g",s,α),".","")),["fpr", "dacc", "dacctst", "npscore"]) 
+  DataFrame([tstfp dacc detacc_at_fp(o,test[2],[α])[1] npscore] , names)
 end
+
+fprstats(f, m, train,test,α::Vector) = mapreduce(i -> fprstats(f, m, train, test, i), hcat, α)
 
 auc(predict::Function, data) = EvalCurves.auc(EvalCurves.roccurve(predict(data[1]), data[2] - 1)...)
 auc(predict::Function, m, data) = EvalCurves.auc(EvalCurves.roccurve(predict(m, data[1]), data[2] - 1)...)

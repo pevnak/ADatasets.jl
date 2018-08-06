@@ -45,7 +45,7 @@ function fit(data,layers,hidden,zdim,β)
 		zmmd = IPMeasures.mmdg(z, randn(zdim,n), 0.5/σ2),
 		ummd = IPMeasures.mmdg(randn(zdim,n), randn(zdim,n), 0.5/σ2),
 		recerror =  Flux.mse(x,mf.g(z)) / n,
-		likelihood =  - mean(SemiSupervised.lognormal(x, mf.g(z), β)),
+		likelihood =  - mean(SemiSupervised.log_normal(x, mf.g(z), β)),
 		train_px = mean(SemiSupervised.px(mf,x, 100,mf.β)),
 		train_pxis = mean(SemiSupervised.pxis(mf, x , 100, mf.β)),
 		train_kde_pxis = mean(SemiSupervised.pxis(mf, x, kde, 100, mf.β)),

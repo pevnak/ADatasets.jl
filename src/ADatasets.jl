@@ -2,6 +2,7 @@ module ADatasets
 using DataFrames
 surveydatasets = ["breast-cancer-wisconsin", "cardiotocography", "ecoli", "magic-telescope", "waveform-1", "statlog-segment", "wall-following-robot", "yeast", "sonar"]
 
+include("roc.jl")
 include("makesets.jl")
 include("evaluation.jl")
 

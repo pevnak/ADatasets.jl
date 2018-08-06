@@ -82,14 +82,15 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
         # in this setting, simply sample trn_a anomalous points
         inds = randperm(a)[1:trn_a]
     elseif variation == "high"
-        # in this setting, randomly choose a point and then trn_a-1 nearest points to it as a cluster
-        x = anomalous[:, sample(1:a)]
-        x = reshape(x, : , 1) # promote the vector to a 2D array
-        # here maybe other metrics could be used?
-        dists = pairwise(Euclidean(), x, anomalous) # get the distance vector
-        inds = sortperm(reshape(dists, length(dists))) # get the sorted indices
-        inds = inds[1:trn_a] # get the nearest ones
-        inds = inds[randperm(length(inds))] # scramble them
+        error("not impleemnted yet")
+        # # in this setting, randomly choose a point and then trn_a-1 nearest points to it as a cluster
+        # x = anomalous[:, sample(1:a)]
+        # x = reshape(x, : , 1) # promote the vector to a 2D array
+        # # here maybe other metrics could be used?
+        # dists = pairwise(Euclidean(), x, anomalous) # get the distance vector
+        # inds = sortperm(reshape(dists, length(dists))) # get the sorted indices
+        # inds = inds[1:trn_a] # get the nearest ones
+        # inds = inds[randperm(length(inds))] # scramble them
     end
     trn_a_data = anomalous[:, inds]
     tst_a_data = anomalous[:,setdiff(1:a,inds)]
