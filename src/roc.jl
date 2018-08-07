@@ -1,5 +1,5 @@
 function roccurve(scores, truelabels)
-    # trualabels ϵ[0, 1]
+    # truelabels l ϵ {0, 1}
 
     descendingidx = sortperm(scores, rev = true)
     scores = scores[descendingidx]
