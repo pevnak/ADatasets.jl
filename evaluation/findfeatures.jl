@@ -1,7 +1,6 @@
 using ADatasets
 using Iterators
 using StatsBase
-using EvalCurves
 using Iterators
 using Lazy
 using DataFrames

@@ -111,9 +111,9 @@ end
 """
 subsampleanomalous(x,α::AbstractFloat,seed = time_ns()) = subsampleanomalous(x,Int(round(α*sum(x[2] .== 1))),seed)
 function subsampleanomalous(x,n::Int,seed = time_ns())
-    data,labels = x 
+    data, labels = x 
     a = find(labels .> 1)
-    inds = sample(a,min(n,length(a)),replace=false)
+    inds = sample(a,max(1,min(n,length(a))),replace=false)
     inds = vcat(find(labels .== 1), inds)
     data[:,inds], labels[inds]
 end

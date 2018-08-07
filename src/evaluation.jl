@@ -67,5 +67,5 @@ end
 
 fprstats(f, m, train,test,α::Vector) = mapreduce(i -> fprstats(f, m, train, test, i), hcat, α)
 
-auc(predict::Function, data) = EvalCurves.auc(EvalCurves.roccurve(predict(data[1]), data[2] - 1)...)
-auc(predict::Function, m, data) = EvalCurves.auc(EvalCurves.roccurve(predict(m, data[1]), data[2] - 1)...)
+auc(predict::Function, data) = auc(roccurve(predict(data[1]), data[2] - 1)...)
+auc(predict::Function, m, data) = auc(roccurve(predict(m, data[1]), data[2] - 1)...)
