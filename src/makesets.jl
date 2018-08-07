@@ -1,11 +1,11 @@
 using Distances
-using CSV 
+using CSV
 using StatsBase
 
 
 """
     standartize(x...)
-    
+
     returned standartized matrices with mean and standard deviation calculated jointly across all datasets
 
 """
@@ -32,7 +32,7 @@ catwithlabels(x...) = hcat(x...), mapreduce(i -> i[1]*ones(Int,i[2]),vcat,enumer
 """
 function typedread(filename,T,transposed = true)
     n = length(CSV.read(filename, header = false, delim=" ",rows=1));
-    m = Matrix{T}(CSV.read(filename,header = false, delim = " ", types = fill(T,n)))
+    m = Matrix{T}(CSV.read(filename,header = false, delim = " ", types = fill(T,n), nullable = false))
     (transposed) ? transpose(m) : m
 end
 
@@ -43,8 +43,8 @@ loaddataset(name,difficulty,idir,T=Float32) = (typedread(joinpath(idir,name,"nor
 """
     trData, tstData, clusterdness = makeset(dataset, alpha, frequency, variation, [normalize, seed])
 
-Sample a given dataset, return training and testing subsets and a measure of clusterdness. 
-See Emmott, Andrew F., et al. "Systematic construction of anomaly detection benchmarks from 
+Sample a given dataset, return training and testing subsets and a measure of clusterdness.
+See Emmott, Andrew F., et al. "Systematic construction of anomaly detection benchmarks from
 real data.", 2013 for details.
 
 alpha - the ratio of training to all data\n
@@ -61,7 +61,7 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
     trn_n = Int(round(n*alpha))
     tst_n = n - trn_n
 
-    # how many anomalous points to be sampled 
+    # how many anomalous points to be sampled
     a = size(anomalous,2)
     trn_a = Int(round(a*alpha))
     tst_a = a - trn_a
@@ -69,7 +69,7 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
 
     # set seed
     srand(seed)
-    # normalize the data to zero mean and unit variance    
+    # normalize the data to zero mean and unit variance
     normal, anomalous = standartize(normal, anomalous)
 
     # randomly sample the training and testing normal data
@@ -78,7 +78,7 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
     tst_n_data = normal[:, setdiff(1:n,inds)]
 
     # now sample the anomalous data
-    if variation == "low" 
+    if variation == "low"
         # in this setting, simply sample trn_a anomalous points
         inds = randperm(a)[1:trn_a]
     elseif variation == "high"
@@ -111,7 +111,7 @@ end
 """
 subsampleanomalous(x,α::AbstractFloat,seed = time_ns()) = subsampleanomalous(x,Int(round(α*sum(x[2] .== 1))),seed)
 function subsampleanomalous(x,n::Int,seed = time_ns())
-    data, labels = x 
+    data, labels = x
     a = find(labels .> 1)
     inds = sample(a,max(1,min(n,length(a))),replace=false)
     inds = vcat(find(labels .== 1), inds)
