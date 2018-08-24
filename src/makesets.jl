@@ -1,8 +1,3 @@
-using Distances
-using CSV
-using StatsBase
-
-
 """
     standartize(x...)
 

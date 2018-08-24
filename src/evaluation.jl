@@ -1,7 +1,3 @@
-using MLDataPattern
-using FileIO
-
-
 """
     detacc_at_fp(n, p, α = [0.005,0.01,0.05])
 
@@ -18,7 +14,7 @@ detacc_at_fp(x::Vector{T}, y::Vector{Int}, α = [0.005,0.01,0.05]) where {T<:Rea
     fit ---
 """
 function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, name, repetition = 1, steps = 50000)
-  println(@sprintf("processing knn %s %s %g %s",dataset, anomaly_type, polution, variation))
+  println("processing knn ",dataset, anomaly_type, polution, variation)
   train, test, clusterdness = makeset(loaddataset(dataset,anomaly_type,idir)..., 0.75,variation)
   idim = size(train[1],1)
   data = RandomBatches((subsampleanomalous(train,polution)[1],),100,steps)

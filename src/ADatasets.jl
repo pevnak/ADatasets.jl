@@ -1,6 +1,9 @@
 module ADatasets
-using DataFrames
+using DataFrames, MLDataPattern, FileIO, Distances, CSV, StatsBase, Printf
+
+
 surveydatasets = ["breast-cancer-wisconsin", "cardiotocography", "ecoli", "magic-telescope", "waveform-1", "statlog-segment", "wall-following-robot", "yeast", "sonar"]
+easydatasets = ["abalone", "blood-transfusion", "breast-cancer-wisconsin", "breast-tissue", "cardiotocography", "ecoli", "glass", "haberman", "ionosphere", "iris", "isolet", "letter-recognition", "libras", "magic-telescope", "miniboone", "multiple-features", "musk-2", "page-blocks", "parkinsons", "pendigits", "pima-indians", "sonar", "spect-heart", "statlog-satimage", "statlog-segment", "statlog-shuttle", "statlog-vehicle", "synthetic-control-chart", "wall-following-robot", "waveform-1", "waveform-2", "wine", "yeast"]
 
 include("roc.jl")
 include("makesets.jl")
