@@ -3,9 +3,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryProvider]]
 deps = ["Libdl", "Pkg", "SHA", "Test"]
-git-tree-sha1 = "ffbf89cc49b073cffdb91381b7ee60557a03ec96"
+git-tree-sha1 = "b530fbeb6f41ab5a83fbe3db1fcbe879334bcd2d"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.4.1"
+version = "0.4.2"
 
 [[CSV]]
 deps = ["CategoricalArrays", "DataFrames", "DataStreams", "Dates", "InternedStrings", "Missings", "Mmap", "Test", "WeakRefStrings"]
@@ -143,9 +143,21 @@ version = "0.2.10"
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
+[[Nullables]]
+deps = ["Compat", "Pkg"]
+git-tree-sha1 = "7777136d2169f07b9674a9d8dbd550d99fd250b8"
+uuid = "4d1e1d77-625e-5b40-9113-a560ec7a8ecd"
+version = "0.0.7"
+
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+
+[[PooledArrays]]
+deps = ["Test"]
+git-tree-sha1 = "361c7e4ece153d7a570ec3adab6f32613ab4e54c"
+uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+version = "0.3.0"
 
 [[Printf]]
 deps = ["Unicode"]
@@ -206,6 +218,12 @@ version = "0.25.0"
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TextParse]]
+deps = ["CodecZlib", "Compat", "DataStructures", "Dates", "Mmap", "Nullables", "PooledArrays", "Test", "WeakRefStrings"]
+git-tree-sha1 = "f33529861ce1126edb9c0160243d5e67888bc5cc"
+uuid = "e0df1984-e451-5cb5-8b61-797a481e67e3"
+version = "0.6.0"
 
 [[TranscodingStreams]]
 deps = ["DelimitedFiles", "Pkg", "Random", "Test"]

@@ -25,12 +25,7 @@ catwithlabels(x...) = hcat(x...), mapreduce(i -> i[1]*ones(Int,i[2]),vcat,enumer
 
     load CSV file such that all columns are initiated to type T
 """
-function typedread(filename,T,transposed = true)
-    n = length(CSV.read(filename, header = false, delim=" ",rows=1));
-    m = Matrix{T}(CSV.read(filename,header = false, delim = " ", types = fill(T,n), nullable = false))
-    (transposed) ? transpose(m) : m
-end
-
+typedread(filename,T,transposed = true) = hcat(TextParse.csvread(filename,' ',header_exists=false,spacedelim = true)[1]...)
 
 loaddataset(name,difficulty,idir,T=Float32) = (typedread(joinpath(idir,name,"normal.txt"),T),typedread(joinpath(idir,name,difficulty*".txt"),T))
 

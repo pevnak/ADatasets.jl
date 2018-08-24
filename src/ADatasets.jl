@@ -1,5 +1,5 @@
 module ADatasets
-using DataFrames, MLDataPattern, FileIO, Distances, CSV, StatsBase, Printf
+using DataFrames, MLDataPattern, FileIO, Distances, TextParse, StatsBase, Printf
 
 
 surveydatasets = ["breast-cancer-wisconsin", "cardiotocography", "ecoli", "magic-telescope", "waveform-1", "statlog-segment", "wall-following-robot", "yeast", "sonar"]
