@@ -6,9 +6,9 @@
 """
 function standartize(x...)
     xx = hcat(x...)
-    mn = mean(xx,2);
-    sd = std(xx,2)
-    sd[sd.<1e-6] = 1;
+    mn = mean(xx, dims = 2);
+    sd = std(xx, dims = 2)
+    sd[sd.<1e-6] .= 1;
     map(z -> (z .- mn)./sd,x)
 end
 
@@ -25,7 +25,7 @@ catwithlabels(x...) = hcat(x...), mapreduce(i -> i[1]*ones(Int,i[2]),vcat,enumer
 
     load CSV file such that all columns are initiated to type T
 """
-typedread(filename,T,transposed = true) = hcat(TextParse.csvread(filename,' ',header_exists=false,spacedelim = true)[1]...)
+typedread(filename,T) = T.(Matrix(hcat(TextParse.csvread(filename,' ',header_exists=false,spacedelim = true)[1]...)'))
 
 loaddataset(name,difficulty,idir,T=Float32) = (typedread(joinpath(idir,name,"normal.txt"),T),typedread(joinpath(idir,name,difficulty*".txt"),T))
 
@@ -58,7 +58,7 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
 
 
     # set seed
-    srand(seed)
+    Random.seed!(seed)
     # normalize the data to zero mean and unit variance
     normal, anomalous = standartize(normal, anomalous)
 
@@ -94,16 +94,27 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
 end
 
 """
-    subsampleanomalous(x,α)
-    subsampleanomalous(x,n)
+    subsampleanomalous(x, α, seed = time_ns())
+    subsampleanomalous(x, n, seed = time_ns())
 
-    removes all but α-fraction (or n) non-anomalous samples from dataset `x = (data,labels)`
+    removes all but α-fraction (or n) non-anomalous samples from dataset `x = (data,labels)`. Unless
+    there is no negative sample and `α` is zero, at least positive (anomalous) sample will be returned
 """
-subsampleanomalous(x,α::AbstractFloat,seed = time_ns()) = subsampleanomalous(x,Int(round(α*sum(x[2] .== 1))),seed)
-function subsampleanomalous(x,n::Int,seed = time_ns())
-    data, labels = x
-    a = find(labels .> 1)
-    inds = sample(a,max(1,min(n,length(a))),replace=false)
-    inds = vcat(find(labels .== 1), inds)
-    data[:,inds], labels[inds]
+subsampleanomalous(x,α::AbstractFloat,seed = time_ns()) = subsampleanomalous(x,Int(ceil(α*sum(x[2] .== 1)/0.95)),seed)
+function subsampleanomalous(x::Tuple{A,B},n::Int,seed = time_ns()) where {A<:AbstractMatrix, B<:Vector}
+    inds =  _subsampleanomalous(x[2], n, seed)
+    x[1][:,inds], x[2][inds]
 end
+
+function subsampleanomalous(x::Tuple{A,B},n::Int,seed = time_ns()) where {A<:AbstractVector, B<:Vector}
+    inds =  _subsampleanomalous(x[2], n, seed)
+    x[1][inds], x[2][inds]
+end
+
+function _subsampleanomalous(labels, n, seed)
+    n == 0 && findall(labels .== 1)
+    a = findall(labels .> 1)
+    inds = sample(a,min(n,length(a)),replace=false)
+    vcat(findall(labels .== 1), inds)
+end
+

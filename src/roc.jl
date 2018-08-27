@@ -5,7 +5,7 @@ function roccurve(scores, truelabels)
     scores = scores[descendingidx]
     truelabels = truelabels[descendingidx]
 
-    distincvalueidx = find(diff(scores) .!= 0)
+    distincvalueidx = findall(diff(scores) .!= 0)
     thresholdidx = vcat(distincvalueidx, length(truelabels))
 
     tps = cumsum(truelabels)[thresholdidx]

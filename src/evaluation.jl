@@ -1,10 +1,14 @@
+filterclass(x::Matrix, y::Vector{Int}, c::Int) = x[:,y .== c]
+filterclass(x::Vector, y::Vector{Int}, c::Int) = x[y.== c]
+filterclass(x::Tuple{A,B}, c::Int) where {A,B} = filterclass(x..., c)
+
 """
     detacc_at_fp(n, p, α = [0.005,0.01,0.05])
 
     detection accuracy at particular false positive rates
 
 """
-detacc_at_fp(n::Vector{T}, p::Vector{T}, α = [0.005,0.01,0.05]) where {T<:Real} = mean(p' .> quantile(n,1 - α),2)
+detacc_at_fp(n::Vector{T}, p::Vector{T}, α = [0.005,0.01,0.05]) where {T<:Real} = mean(p' .> quantile(n,1 - α), dims = 2)
 detacc_at_fp(x::Vector{T}, y::Vector{Int}, α = [0.005,0.01,0.05]) where {T<:Real} = detacc_at_fp(x[y .== 1], x[y .== 2],α)
 
 """
@@ -38,7 +42,7 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
 
   end
 
-  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jld",name,anomaly_type,polution,variation))
+  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jdl2",name,anomaly_type,polution,variation))
   results[:repetition] = repetition
   results[:clusterdness] = clusterdness
   append2file(ofname,"auc",results)
@@ -57,11 +61,11 @@ function fprstats(f, m, train,test,α::T) where {T<:Real}
   tstfp = mean( o[test[2][:] .== 1] .- τ .> 0)
   dacc = mean(o[test[2][:] .== 2] .- τ .> 0)
   npscore = max(0,tstfp - α)/α + mean(o[test[2][:] .== 2] .- τ .<= 0)
-  names = map(s -> Symbol(replace(@sprintf("%s_%g",s,α),".","")),["fpr", "dacc", "dacctst", "npscore"]) 
+  names = map(s -> Symbol(replace(@sprintf("%s_%g",s,α),"." => "")),["fpr", "dacc", "dacctst", "npscore"]) 
   DataFrame([tstfp dacc detacc_at_fp(o,test[2],[α])[1] npscore] , names)
 end
 
 fprstats(f, m, train,test,α::Vector) = mapreduce(i -> fprstats(f, m, train, test, i), hcat, α)
 
-auc(predict::Function, data) = auc(roccurve(predict(data[1]), data[2] - 1)...)
-auc(predict::Function, m, data) = auc(roccurve(predict(m, data[1]), data[2] - 1)...)
+auc(predict::Function, data) = auc(roccurve(predict(data[1]), data[2] .- 1)...)
+auc(predict::Function, m, data) = auc(roccurve(predict(m, data[1]), data[2] .- 1)...)
