@@ -13,6 +13,7 @@ function plotheatmap(x::Tuple,f)
 	x, y = x[1], x[2]
 	plotheatmap(x::Matrix,f)
 	xx = filterclass((x,y), 1)
+	
 	mask = f(xx) .> 0
 	scatter!(xx[1,mask], xx[2,mask], marker = [:cross], label = "false positives", color = :red)
 	scatter!(xx[1,.!mask], xx[2,.!mask], marker = [:cross], label = "true negatives", color = :blue)

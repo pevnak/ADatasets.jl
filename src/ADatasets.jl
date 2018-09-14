@@ -1,5 +1,5 @@
 module ADatasets
-using DataFrames, MLDataPattern, FileIO, Distances, TextParse, StatsBase, Printf, Statistics, Random, Plots
+using DataFrames, MLDataPattern, FileIO, Distances, TextParse, StatsBase, Printf, Statistics, Random, JLD2
 
 
 surveydatasets = ["breast-cancer-wisconsin", "cardiotocography", "ecoli", "magic-telescope", "waveform-1", "statlog-segment", "wall-following-robot", "yeast", "sonar"]
@@ -7,9 +7,10 @@ easydatasets = ["abalone", "blood-transfusion", "breast-cancer-wisconsin", "brea
 
 include("roc.jl")
 include("perfmeasures.jl")
+include("densitylevel.jl")
 include("makesets.jl")
 include("evaluation.jl")
-include("plot.jl")
+# include("plot.jl")
 
 """
 		function append2file(fname::String,dname::String,d::DataFrame)
