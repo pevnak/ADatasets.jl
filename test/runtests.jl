@@ -26,7 +26,7 @@ end
 
 @testset "Scikit learn auc comparison" begin
 	# rand dataset
-	for i in 1:100
+	for i in 1:10
 		counts = rand(1:1000, 2)
 		labels = vcat(zeros(counts[1]), ones(counts[2]))
 		ascores = rand(size(labels))

@@ -1,7 +1,7 @@
 function roccurve(scores, truelabels)
     # truelabels l ϵ {0, 1}
 
-    descendingidx = partialsortperm(scores, rev = true)
+    descendingidx = sortperm(scores, rev = true)
     scores = scores[descendingidx]
     truelabels = truelabels[descendingidx]
 
