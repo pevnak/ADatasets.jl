@@ -19,15 +19,15 @@ function compareskauc(labels, ascores)
 	pyauc = sm.auc(pyfpr, pytpr)
 
 	fpr, tpr = ADatasets.roccurve(ascores, labels)
-	auc = ADatasets.auc(fpr,tpr)
+	auc = ADatasets.auc(fpr, tpr)
 
 	@test pyauc ≈ auc
 end
 
-@testset "Scikit learn comparison" begin
+@testset "Scikit learn auc comparison" begin
 	# rand dataset
-	for i in 1:10
-		counts = rand(1:100, 2)
+	for i in 1:100
+		counts = rand(1:1000, 2)
 		labels = vcat(zeros(counts[1]), ones(counts[2]))
 		ascores = rand(size(labels))
 		compareskauc(labels, ascores)
