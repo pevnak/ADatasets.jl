@@ -8,8 +8,8 @@ filterclass(x::Tuple{A,B}, c::Int) where {A,B} = filterclass(x..., c)
     detection accuracy at particular false positive rates
 
 """
-detacc_at_fp(n::Vector{T}, p::Vector{T}, α = [0.005,0.01,0.05]) where {T<:Real} = mean(p' .> quantile(n,1 - α), dims = 2)
-detacc_at_fp(x::Vector{T}, y::Vector{Int}, α = [0.005,0.01,0.05]) where {T<:Real} = detacc_at_fp(x[y .== 1], x[y .== 2],α)
+detacc_at_fp(n::Vector{T}, p::Vector{T}, α = [0.005,0.01,0.05]) where {T<:Real} = mean(p' .> quantile(n,1 .- α), dims = 2)
+detacc_at_fp(x::Vector{T}, y::Vector{Int}, α = [0.005,0.01,0.05]) where {T<:Real} = detacc_at_fp(x[y .== 1], x[y .== 2], α)
 
 """
     runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, repetition = 1, steps = 50000)
@@ -19,11 +19,11 @@ detacc_at_fp(x::Vector{T}, y::Vector{Int}, α = [0.005,0.01,0.05]) where {T<:Rea
 """
 function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, variation, idir, odir, name, repetition = 1, steps = 50000)
   println("processing knn ",dataset, anomaly_type, polution, variation)
-  train, test, clusterdness = makeset(loaddataset(dataset,anomaly_type,idir)..., 0.75,variation)
+  train, test, clusterdness = makeset(loaddataset(dataset,anomaly_type,idir)..., 0.75, variation)
   idim = size(train[1],1)
-  data = RandomBatches((subsampleanomalous(train,polution)[1],),100,steps)
+  data = RandomBatches((subsampleanomalous(train,polution)[1],), 100, steps)
 
-  results = mapreduce(vcat,ps) do p
+  results = mapreduce(vcat, ps) do p
     m,info = fit(data,p...)
 
     #calculate areas under the curve on training and testing data for different prediction functions
@@ -39,7 +39,6 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
       hcat(df,fprstats(f, m, train,test,[0.005,0.01,0.05]))
     end
     aucs = join(info, aucs, kind = :cross)
-
   end
 
   ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jdl2",name,anomaly_type,polution,variation))

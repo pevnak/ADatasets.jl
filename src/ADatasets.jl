@@ -10,7 +10,6 @@ include("perfmeasures.jl")
 include("densitylevel.jl")
 include("makesets.jl")
 include("evaluation.jl")
-# include("plot.jl")
 
 """
 		function append2file(fname::String,dname::String,d::DataFrame)

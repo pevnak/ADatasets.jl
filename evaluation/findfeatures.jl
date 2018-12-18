@@ -23,7 +23,7 @@ function fit(data,layers,hidden,zdim,β)
   σ2 = SemiSupervised.bandwidthofkde(randn(zdim,1000),20)
 	m = SemiSupervised.VAE(FluxExtensions.layerbuilder(idim,hidden,2*zdim,3,"relu","linear","Dense"),
 		FluxExtensions.layerbuilder(zdim,hidden,idim,3,"relu","linear","Dense"), β)
-  m = Adapt.adapt(Float32,m);
+  m = to32(m);
   mf = freeze(m)
   opt = Flux.Optimise.ADAM(params(m));
 
