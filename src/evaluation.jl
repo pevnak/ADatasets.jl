@@ -41,7 +41,8 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
     aucs = join(info, aucs, kind = :cross)
   end
 
-  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jdl2",name,anomaly_type,polution,variation))
+  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jld2",name,anomaly_type,polution,variation))
+  # ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.csv",name,anomaly_type,polution,variation))
   results[:repetition] = repetition
   results[:clusterdness] = clusterdness
   append2file(ofname,"auc",results)
