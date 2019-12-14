@@ -1,5 +1,5 @@
 module ADatasets
-using DataFrames, MLDataPattern, FileIO, Distances, TextParse, StatsBase, Printf, Statistics, Random, JLD2, CSVFiles
+using DataFrames, MLDataPattern, FileIO, Distances, StatsBase, Printf, Statistics, Random, JLD2, CSV
 
 
 surveydatasets = ["breast-cancer-wisconsin", "cardiotocography", "ecoli", "magic-telescope", "waveform-1", "statlog-segment", "wall-following-robot", "yeast", "sonar"]
@@ -30,6 +30,12 @@ function append2file(fname::String,dname::String,d::DataFrame)
   else 
   	save(fname,dname,d)
   end
+end
+
+function append2file(fname::String,d::DataFrame)
+  !isdir(dirname(fname)) && mkpath(dirname(fname))
+  d = isfile(fname) ? vcat(load(fname), d) : d
+  save(fname,d)
 end
 
 end # module

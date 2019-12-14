@@ -1,3 +1,4 @@
+using TextParse
 """
     standartize(x...)
 
@@ -6,10 +7,13 @@
 """
 function standartize(x...)
     xx = hcat(x...)
+    mask = std(xx, dims = 2)[:] .> 1e-6
+    x = map(z -> z[mask, :], x)
+
+    xx = hcat(x...)
     mn = mean(xx, dims = 2);
     sd = std(xx, dims = 2)
-    sd[sd.<1e-6] .= 1;
-    map(z -> (z .- mn)./sd,x)
+    map(z -> (z .- mn)./sd, x)
 end
 
 """
@@ -47,12 +51,12 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
     !(0 <= alpha <= 1) && error("alpha must be in the interval [0,1]")
 
     # problem dimensions
-    n = size(normal,2)
+    n = size(normal, 2)
     trn_n = Int(round(n*alpha))
     tst_n = n - trn_n
 
     # how many anomalous points to be sampled
-    a = size(anomalous,2)
+    a = size(anomalous, 2)
     trn_a = Int(round(a*alpha))
     tst_a = a - trn_a
 
@@ -86,8 +90,8 @@ function makeset(normal, anomalous, alpha, variation, seed=time_ns())
     tst_a_data = anomalous[:,setdiff(1:a,inds)]
 
     # compute the clusterdness - sample variance of normal vs anomalous instances
-    varN = mean(pairwise(Euclidean(), trn_n_data[:, sample(1:size(trn_n_data,2), min(1000, size(trn_n_data,2)), replace=false)]))/2
-    varA = (trn_n > 0) ? mean(pairwise(Euclidean(), trn_a_data[:, sample(1:size(trn_a_data,2), min(1000, size(trn_a_data,2)), replace=false)]))/2 : 0.0
+    varN = mean(pairwise(Euclidean(), trn_n_data[:, sample(1:size(trn_n_data, 2), min(1000, size(trn_n_data, 2)), replace=false)]))/2
+    varA = (trn_n > 0) ? mean(pairwise(Euclidean(), trn_a_data[:, sample(1:size(trn_a_data, 2), min(1000, size(trn_a_data, 2)), replace=false)]))/2 : 0.0
 
     clusterdness =  (varA>0) ? varN/varA : clusterdness = Inf
     catwithlabels(trn_n_data, trn_a_data), catwithlabels(tst_n_data, tst_a_data), clusterdness
@@ -117,4 +121,31 @@ function _subsampleanomalous(labels, n, seed)
     inds = sample(a,min(n,length(a)),replace=false)
     vcat(findall(labels .== 1), inds)
 end
+
+"""
+    subsampletrainvalidation(x, α, β, seed = time_ns())
+    subsampletrainvalidation(x, na, nl, seed = time_ns())
+
+    return training and validation dataset, such that training set is poluted with `α` anomalous data 
+    and `β` legitimate data.
+"""
+function subsampletrainvalidation(x::Tuple, na, nl, seed = time_ns()) 
+    (trn_idxs, val_idxs) = _subsampletrainvalidation(x[2], na, nl, seed)
+    return((x[1][:, trn_idxs], x[2][trn_idxs]),(x[1][:,val_idxs], x[2][val_idxs]))
+end
+
+function _subsampletrainvalidation(labels, na, nl, seed)
+    ai = na == 0 ? Vector{Int}() :  sampleindices(findall(labels .> 0), na)
+    li = sampleindices(findall(labels .== 0), nl)
+    trn_idxs = vcat(ai,li)
+    val_idxs = setdiff(1:length(labels), trn_idxs)
+    return(trn_idxs, val_idxs)
+end
+
+sampleindices(indices, α::AbstractFloat) = sampleindices(indices, round(Int,α*length(indices)))
+function sampleindices(indices, n::Int)
+    n = min(n, length(indices))
+    return(sample(indices, n ,replace=false))
+end
+
 

@@ -41,11 +41,29 @@ function runtest(fit, ps, predicts, prnames,  dataset, anomaly_type, polution, v
     aucs = join(info, aucs, kind = :cross)
   end
 
-  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.jld2",name,anomaly_type,polution,variation))
-  # ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s.csv",name,anomaly_type,polution,variation))
   results[:repetition] = repetition
   results[:clusterdness] = clusterdness
-  append2file(ofname,"auc",results)
+  ofname = joinpath(odir,dataset,@sprintf("%s_%s_%g_%s",name,anomaly_type,polution,variation))
+  append2file(ofname*".jld2","auc",results)
+  append2file(ofname*".csv",results)
+end
+
+
+"""
+    anomalyexperiment(fit, trainstats, teststats, dataset; aparam, dataparts, repetition)
+
+
+    trainstats --- statistics to be extracted on training data
+    teststats --- statistics to be extracted on testing data
+    aparam --- (type = "east", polution = "0.0", variation = "low") , variation parameters of generator of anomalies 
+    dataparts --- (0.75, 0.25) fraction of samples used for training and for testing
+    repetition --- used as a seed for random number generator to initialize the data
+"""
+function anomalyexperiment(fit, trainstats, teststats, dataset; aparam = (type = "easy", polution = 0.0, variation = "low"), dataparts = (0.75, 0.25), repetition = 1)
+  println("parameters of anomalies: ", aparam)
+  trndata, tstdata, clusterdness = makeset(loaddataset(dataset, a.type ,idir)..., dataparts[1], aparam.variation)
+
+  model = fit(subsampleanomalous(trndata, aparam.polution)[1])
 end
 
 """

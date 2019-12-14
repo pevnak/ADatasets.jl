@@ -1,5 +1,8 @@
 function roccurve(scores, truelabels)
     # truelabels l ϵ {0, 1}
+    if all(unique(truelabels) .== [1, 2])
+        truelabels .-= 1
+    end
 
     descendingidx = sortperm(scores, rev = true)
     scores = scores[descendingidx]
@@ -35,7 +38,14 @@ function roccurve(scores, truelabels)
     return fpr, tpr
 end
 
-function auc(x, y)
+auc(ŷ::Vector{T}, y::Vector{Int}) where {T<: Real} = auc(roccurve(ŷ, y)...)
+
+function auc(x::Vector{T}, y::Vector{T}) where {T<:Real}
+    if all(unique(y) == [0,1]) || all(unique(y) == [1, 2])
+        @warn "it seems like you are passing a function labels, invoking roccurve"
+        x, y = roccurve(x, y)
+    end
+
     dx = diff(x)
     dy = y[2:end] + y[1:end - 1]
     return dx' * dy / 2

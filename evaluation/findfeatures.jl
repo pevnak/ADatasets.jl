@@ -19,7 +19,7 @@ odir = filter(isdir,["/Users/tpevny/Work/Julia/results/datasets","/mnt/output/re
 
 
 function fit(data,layers,hidden,zdim,β)
-  idim = size(data.data[1],1)
+  idim = size(data.data[1], dims = 1)
   σ2 = SemiSupervised.bandwidthofkde(randn(zdim,1000),20)
 	m = SemiSupervised.VAE(FluxExtensions.layerbuilder(idim,hidden,2*zdim,3,"relu","linear","Dense"),
 		FluxExtensions.layerbuilder(zdim,hidden,idim,3,"relu","linear","Dense"), β)
@@ -32,7 +32,7 @@ function fit(data,layers,hidden,zdim,β)
   # let's estimate the distance between the prior and posterior using MMD (zmmd) 
   # and calibration distance on prior and prior
   x = IPMeasures.samplecolumns(data.data[1],1000)
-  n = size(x,2)
+  n = size(x, dims = 2)
   z = SemiSupervised.gaussiansample(SemiSupervised.hsplitsoftp(mf.q(x))...)
   kσ2 = SemiSupervised.bandwidthofkde(z,20)
 	kde = x -> SemiSupervised.kde(x,z,kσ2)
@@ -64,7 +64,7 @@ layers, hidden, zdim, β = 3, 32, 32, 2.0
 train, test, clusterdness = ADatasets.makeset(ADatasets.loaddataset("breast-cancer-wisconsin","easy",idir)..., 0.75,"low")
 
 subspace(x,ft) = (x[1][ft,:],x[2])
-d = size(train[1],1)
+d = size(train[1], dims = 1)
 df = mapreduce(vcat, [[i,j] for i in 2:d for j in 1:i-1]) do ft
 	trn, tst = subspace(train,ft), subspace(test,ft)
 	data = RandomBatches((trn[1],),100,10000)
